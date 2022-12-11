@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"golang-game/renderer"
+	"time"
 )
 
 func main() {
@@ -12,22 +13,32 @@ func main() {
 	windowName := "main"
 	windowHeight := renderer.Type_WindowHeight(800)
 	windowWidth := renderer.Type_WindowWidth(800)
-	err, renderer := renderer.CreateRenderer(windowName, windowWidth, windowHeight)
+	createdRenderer, err := renderer.CreateRenderer(windowName, windowWidth, windowHeight)
 
 	if err != nil {
-		fmt.Printf("can't create renderer, %w", err)
+		fmt.Printf("can't create renderer, %v", err)
 	}
-	defer renderer.DestroyRenderer()
+	defer createdRenderer.DestroyRenderer()
 
-	err, _ = renderer.CreateRectFromBMP("assets/test.bmp")
+	rect := renderer.BmpSpriteRect{TopLeftXPos: 0, TopLeftYPos: 0, Width: 100, Height: 100}
+	spriteId, err := createdRenderer.CreateBMPFromSpriteMap("assets/test.bmp", rect)
 	if err != nil {
-		fmt.Printf("failed to create a rect from bmp file, %w", err)
+		fmt.Printf("failed to create a rect from bmp file, %v", err)
 	}
 
-	for renderer.UserWantsToQuit() == false {
-		err := renderer.Draw()
+	for !createdRenderer.UserWantsToQuit() {
+		err := createdRenderer.Draw()
+		sprite := createdRenderer.GetSprite(spriteId)
+		if sprite != nil {
+			rect.TopLeftXPos += 1
+			rect.TopLeftYPos += 1
+			rect.TopLeftXPos %= 300
+			rect.TopLeftYPos %= 300
+			time.Sleep(100 * time.Millisecond)
+			sprite.UpdateSpriteRect(rect)
+		}
 		if err != nil {
-			fmt.Printf("failed to render a frame, %w", err)
+			fmt.Printf("failed to render a frame, %v", err)
 		}
 	}
 }

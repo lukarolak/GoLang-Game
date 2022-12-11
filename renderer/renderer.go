@@ -2,7 +2,6 @@ package renderer
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -14,35 +13,16 @@ type Renderer struct {
 type Type_WindowWidth uint32
 type Type_WindowHeight uint32
 
-func CreateRenderer(windowName string, windowWidth Type_WindowWidth, windowHeight Type_WindowHeight) (error, Renderer) {
+func CreateRenderer(windowName string, windowWidth Type_WindowWidth, windowHeight Type_WindowHeight) (Renderer, error) {
 	renderer := Renderer{}
 	var err error = nil
-	err, renderer.window = createWindow(windowName, windowWidth, windowHeight)
+	renderer.window, err = createWindow(windowName, windowWidth, windowHeight)
 
 	if err != nil {
-		return fmt.Errorf("can't create window, %w", err), renderer
+		return renderer, fmt.Errorf("can't create window, %w", err)
 	}
 
-	return nil, renderer
-}
-
-func (renderer Renderer) createWindow(windowWidth Type_WindowWidth, windowHeight Type_WindowHeight) (error, *sdl.Window) {
-	if math.MaxInt32 < windowWidth {
-		return fmt.Errorf("specified window width (%u) not supported", windowWidth), nil
-	}
-
-	if math.MaxInt32 < windowHeight {
-		return fmt.Errorf("specified window height (%u) not supported", windowHeight), nil
-	}
-
-	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
-		int32(windowWidth), int32(windowHeight), sdl.WINDOW_SHOWN)
-
-	if err != nil {
-		return fmt.Errorf("can't create window, %w", err), nil
-	}
-
-	return nil, window
+	return renderer, nil
 }
 
 func (renderer Renderer) DestroyRenderer() {
@@ -64,12 +44,19 @@ func (renderer Renderer) UserWantsToQuit() bool {
 		switch event.(type) {
 		case *sdl.QuitEvent:
 			return true
-			break
 		}
 	}
 	return false
 }
 
-func (renderer *Renderer) CreateRectFromBMP(pathToBMP string) (error, Type_RectId) {
-	return renderer.window.CreateRectFromBMP(pathToBMP)
+func (renderer *Renderer) CreateBMPFromFile(pathToBMP string) (Type_SpriteId, error) {
+	return renderer.window.CreateBMPFromFile(pathToBMP)
+}
+
+func (renderer *Renderer) CreateBMPFromSpriteMap(pathToBMP string, bmpSpriteRect BmpSpriteRect) (Type_SpriteId, error) {
+	return renderer.window.Surface.CreateBMPFromSpriteMap(pathToBMP, bmpSpriteRect)
+}
+
+func (renderer Renderer) GetSprite(spriteId Type_SpriteId) *bmpRect {
+	return renderer.window.GetSprite(spriteId)
 }

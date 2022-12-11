@@ -7,48 +7,48 @@ import (
 )
 
 type renderSurface struct {
-	Surface  *sdl.Surface
-	BMPRects []*bmpRect
+	Surface       *sdl.Surface
+	bmpCollection renderBMPCollection
 }
 
-func (window renderWindow) createSurface() (error, renderSurface) {
+func (window renderWindow) createSurface() (renderSurface, error) {
 	surface := renderSurface{}
 
 	var err error = nil
 	surface.Surface, err = window.Window.GetSurface()
 	if err != nil {
-		return fmt.Errorf("can't create surface, %w", err), surface
+		return surface, fmt.Errorf("can't create surface, %w", err)
 	}
 
-	return nil, surface
+	return surface, nil
 }
 
-type Type_RectId uint32
-
-func (surface *renderSurface) CreateRectFromBMP(pathToBMP string) (error, Type_RectId) {
-	err, rect := createBMPRect(pathToBMP)
+func (surface *renderSurface) CreateBMPFromFile(pathToBMP string) (Type_SpriteId, error) {
+	bmp, err := createBMPFromFile(pathToBMP)
 
 	if err != nil {
-		return fmt.Errorf("can't create rect from BMP, %w", err), Type_RectId(0)
+		return Type_SpriteId(0), fmt.Errorf("can't create rect from BMP, %w", err)
 	}
 
-	for i := 0; i < len(surface.BMPRects); i++ {
-		if surface.BMPRects[i] == nil {
-			surface.BMPRects[i] = &rect
-			return nil, Type_RectId(i)
-		}
+	return surface.bmpCollection.AddBMP(bmp), nil
+}
+
+func (surface *renderSurface) CreateBMPFromSpriteMap(pathToBMP string, bmpSpriteRect BmpSpriteRect) (Type_SpriteId, error) {
+	rect, err := createBMPRectFromSpriteMap(pathToBMP, bmpSpriteRect)
+
+	if err != nil {
+		return Type_SpriteId(0), fmt.Errorf("can't create rect from BMP, %w", err)
 	}
 
-	surface.BMPRects = append(surface.BMPRects, &rect)
-	return nil, Type_RectId(len(surface.BMPRects) - 1)
+	return surface.bmpCollection.AddBMP(rect), nil
 }
 
 func (surface renderSurface) Draw() error {
-	for index, rect := range surface.BMPRects {
+	for index, rect := range surface.bmpCollection.BMPRects {
 		if rect != nil {
 			err := surface.drawBMPRect(*rect)
 			if err != nil {
-				return fmt.Errorf("can't draw bmp with id %u", Type_RectId(index))
+				return fmt.Errorf("can't draw bmp with id %d", Type_SpriteId(index))
 			}
 		}
 	}
@@ -57,7 +57,7 @@ func (surface renderSurface) Draw() error {
 }
 
 func (surface renderSurface) drawBMPRect(rect bmpRect) error {
-	err := rect.Surface.Blit(nil, surface.Surface, &sdl.Rect{X: 0, Y: 0, W: rect.Surface.W, H: rect.Surface.H})
+	err := rect.Surface.Blit(&rect.Surface.ClipRect, surface.Surface, &sdl.Rect{X: 0, Y: 0, W: rect.Surface.W, H: rect.Surface.H})
 	if err != nil {
 		return fmt.Errorf("can't draw BMP rect, %w", err)
 	}
@@ -66,9 +66,9 @@ func (surface renderSurface) drawBMPRect(rect bmpRect) error {
 }
 
 func (surface renderSurface) Destroy() {
-	for _, rect := range surface.BMPRects {
-		if rect != nil {
-			rect.DestroyBMPRect()
-		}
-	}
+	surface.bmpCollection.Destroy()
+}
+
+func (surface *renderSurface) GetSprite(spriteId Type_SpriteId) *bmpRect {
+	return surface.bmpCollection.GetSprite(spriteId)
 }
