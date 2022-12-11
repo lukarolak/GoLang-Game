@@ -1,39 +1,33 @@
 package main
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"fmt"
+	"golang-game/renderer"
+)
 
 func main() {
-	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
-		panic(err)
-	}
-	defer sdl.Quit()
+	renderer.InitalizeLibrary()
+	defer renderer.CleanUpLibrary()
 
-	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
-		800, 600, sdl.WINDOW_SHOWN)
+	windowName := "main"
+	windowHeight := renderer.Type_WindowHeight(800)
+	windowWidth := renderer.Type_WindowWidth(800)
+	err, renderer := renderer.CreateRenderer(windowName, windowWidth, windowHeight)
+
 	if err != nil {
-		panic(err)
+		fmt.Printf("can't create renderer, %w", err)
 	}
-	defer window.Destroy()
+	defer renderer.DestroyRenderer()
 
-	surface, err := window.GetSurface()
+	err, _ = renderer.CreateRectFromBMP("assets/test.bmp")
 	if err != nil {
-		panic(err)
+		fmt.Printf("failed to create a rect from bmp file, %w", err)
 	}
-	surface.FillRect(nil, 0)
 
-	rect := sdl.Rect{0, 0, 200, 300}
-	surface.FillRect(&rect, 0xffff0005)
-	window.UpdateSurface()
-
-	running := true
-	for running {
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
-			case *sdl.QuitEvent:
-				println("Quit")
-				running = false
-				break
-			}
+	for renderer.UserWantsToQuit() == false {
+		err := renderer.Draw()
+		if err != nil {
+			fmt.Printf("failed to render a frame, %w", err)
 		}
 	}
 }
