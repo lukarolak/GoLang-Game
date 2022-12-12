@@ -34,11 +34,15 @@ func main() {
 			rect.TopLeftYPos += 1
 			rect.TopLeftXPos %= 300
 			rect.TopLeftYPos %= 300
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(5 * time.Millisecond)
 			sprite.UpdateSpriteRect(rect)
+			sprite.UpdateSpritePosition(rect.TopLeftXPos, rect.TopLeftYPos)
 		}
 		if err != nil {
 			fmt.Printf("failed to render a frame, %v", err)
+			continue
 		}
+
+		createdRenderer.ClearWindow()
 	}
 }

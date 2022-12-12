@@ -54,6 +54,15 @@ func (window renderWindow) Draw() error {
 	return nil
 }
 
+func (window renderWindow) ClearWindow() error {
+	err := window.Surface.Clear()
+	if err != nil {
+		return fmt.Errorf("can't clear window surface, %w", err)
+	}
+
+	return nil
+}
+
 func (window *renderWindow) CreateBMPFromFile(pathToBMP string) (Type_SpriteId, error) {
 	return window.Surface.CreateBMPFromFile(pathToBMP)
 }

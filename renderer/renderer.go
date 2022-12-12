@@ -39,6 +39,15 @@ func (renderer Renderer) Draw() error {
 	return nil
 }
 
+func (renderer Renderer) ClearWindow() error {
+	err := renderer.window.ClearWindow()
+	if err != nil {
+		return fmt.Errorf("can't clear window, %w", err)
+	}
+
+	return nil
+}
+
 func (renderer Renderer) UserWantsToQuit() bool {
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch event.(type) {

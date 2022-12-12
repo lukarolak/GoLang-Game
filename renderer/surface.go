@@ -56,8 +56,16 @@ func (surface renderSurface) Draw() error {
 	return nil
 }
 
+func (surface renderSurface) Clear() error {
+	err := surface.Surface.FillRect(&surface.Surface.ClipRect, 0)
+	if err != nil {
+		return fmt.Errorf("can't clear surface, %w", err)
+	}
+	return nil
+}
+
 func (surface renderSurface) drawBMPRect(rect bmpRect) error {
-	err := rect.Surface.Blit(&rect.Surface.ClipRect, surface.Surface, &sdl.Rect{X: 0, Y: 0, W: rect.Surface.W, H: rect.Surface.H})
+	err := rect.Surface.Blit(&rect.Surface.ClipRect, surface.Surface, &sdl.Rect{X: int32(rect.TopLeftXPos), Y: int32(rect.TopLeftYPos), W: rect.Surface.W, H: rect.Surface.H})
 	if err != nil {
 		return fmt.Errorf("can't draw BMP rect, %w", err)
 	}

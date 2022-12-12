@@ -8,7 +8,9 @@ import (
 )
 
 type bmpRect struct {
-	Surface *sdl.Surface
+	Surface     *sdl.Surface
+	TopLeftXPos uint32
+	TopLeftYPos uint32
 }
 
 type BmpSpriteRect struct {
@@ -82,4 +84,9 @@ func (rect *bmpRect) UpdateSpriteRect(newSpriteRect BmpSpriteRect) error {
 		H: int32(newSpriteRect.Height)})
 
 	return nil
+}
+
+func (rect *bmpRect) UpdateSpritePosition(topLeftXPos uint32, topLeftYPos uint32) {
+	rect.TopLeftXPos = topLeftXPos
+	rect.TopLeftYPos = topLeftYPos
 }
