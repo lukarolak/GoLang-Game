@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"golang-game/game"
 	"golang-game/renderer"
-	"time"
 )
 
 func main() {
@@ -20,24 +20,11 @@ func main() {
 	}
 	defer createdRenderer.DestroyRenderer()
 
-	rect := renderer.BmpSpriteRect{TopLeftXPos: 0, TopLeftYPos: 0, Width: 100, Height: 100}
-	spriteId, err := createdRenderer.CreateBMPFromSpriteMap("assets/test.bmp", rect)
-	if err != nil {
-		fmt.Printf("failed to create a rect from bmp file, %v", err)
-	}
+	gameData := game.GameData{}
+	gameData.CreateGameData(&createdRenderer)
 
 	for !createdRenderer.UserWantsToQuit() {
 		err := createdRenderer.Draw()
-		sprite := createdRenderer.GetSprite(spriteId)
-		if sprite != nil {
-			rect.TopLeftXPos += 1
-			rect.TopLeftYPos += 1
-			rect.TopLeftXPos %= 300
-			rect.TopLeftYPos %= 300
-			time.Sleep(5 * time.Millisecond)
-			sprite.UpdateSpriteRect(rect)
-			sprite.UpdateSpritePosition(rect.TopLeftXPos, rect.TopLeftYPos)
-		}
 		if err != nil {
 			fmt.Printf("failed to render a frame, %v", err)
 			continue
